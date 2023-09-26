@@ -54,10 +54,8 @@ class PointAnnotationController: NSObject, FLT_PointAnnotationMessager {
                 if index == nil {
                     throw AnnotationControllerError.noAnnotationFound
                 }
-
-                let updatedAnnotation = annotation.toPointAnnotation()
-
-                manager.annotations[index!] = updatedAnnotation
+                let originalAnnotation = manager.annotations[index!]
+                manager.annotations[index!] = annotation.copyToPointAnnotation(to: originalAnnotation)
                 completion(nil)
             } else {
                 completion(FlutterError(code: PointAnnotationController.errorCode, message: "No manager found with id: \(managerId)", details: nil))
@@ -984,81 +982,89 @@ extension FLTPointAnnotationOptions {
 
 extension FLTPointAnnotation {
     func toPointAnnotation() -> PointAnnotation {
-    var annotation = PointAnnotation(id: self.id, coordinate: convertDictionaryToCLLocationCoordinate2D(dict: self.geometry)!)
-    if let image = self.image {
-        annotation.image = .init(image: UIImage(data: image.data, scale: UIScreen.main.scale)!, name: UUID().uuidString)
+        var annotation = PointAnnotation(id: self.id, coordinate: convertDictionaryToCLLocationCoordinate2D(dict: self.geometry)!)
+        return copyToPointAnnotation(to: annotation)
     }
-    annotation.iconAnchor = IconAnchor.allCases[Int(self.iconAnchor.rawValue)]
-    if let iconImage = self.iconImage {
-       annotation.iconImage = iconImage
-    }
-    if let iconOffset = self.iconOffset {
-       annotation.iconOffset = iconOffset.map({$0.doubleValue})
-    }
-    if let iconRotate = self.iconRotate {
-       annotation.iconRotate = iconRotate.doubleValue
-    }
-    if let iconSize = self.iconSize {
-       annotation.iconSize = iconSize.doubleValue
-    }
-    if let symbolSortKey = self.symbolSortKey {
-       annotation.symbolSortKey = symbolSortKey.doubleValue
-    }
-    annotation.textAnchor = TextAnchor.allCases[Int(self.textAnchor.rawValue)]
-    if let textField = self.textField {
-       annotation.textField = textField
-    }
-    annotation.textJustify = TextJustify.allCases[Int(self.textJustify.rawValue)]
-    if let textLetterSpacing = self.textLetterSpacing {
-       annotation.textLetterSpacing = textLetterSpacing.doubleValue
-    }
-    if let textMaxWidth = self.textMaxWidth {
-       annotation.textMaxWidth = textMaxWidth.doubleValue
-    }
-    if let textOffset = self.textOffset {
-       annotation.textOffset = textOffset.map({$0.doubleValue})
-    }
-    if let textRadialOffset = self.textRadialOffset {
-       annotation.textRadialOffset = textRadialOffset.doubleValue
-    }
-    if let textRotate = self.textRotate {
-       annotation.textRotate = textRotate.doubleValue
-    }
-    if let textSize = self.textSize {
-       annotation.textSize = textSize.doubleValue
-    }
-    annotation.textTransform = TextTransform.allCases[Int(self.textTransform.rawValue)]
-    if let iconColor = self.iconColor {
-       annotation.iconColor = StyleColor.init(uiColorFromHex(rgbValue: iconColor.intValue))
-    }
-    if let iconHaloBlur = self.iconHaloBlur {
-       annotation.iconHaloBlur = iconHaloBlur.doubleValue
-    }
-    if let iconHaloColor = self.iconHaloColor {
-       annotation.iconHaloColor = StyleColor.init(uiColorFromHex(rgbValue: iconHaloColor.intValue))
-    }
-    if let iconHaloWidth = self.iconHaloWidth {
-       annotation.iconHaloWidth = iconHaloWidth.doubleValue
-    }
-    if let iconOpacity = self.iconOpacity {
-       annotation.iconOpacity = iconOpacity.doubleValue
-    }
-    if let textColor = self.textColor {
-       annotation.textColor = StyleColor.init(uiColorFromHex(rgbValue: textColor.intValue))
-    }
-    if let textHaloBlur = self.textHaloBlur {
-       annotation.textHaloBlur = textHaloBlur.doubleValue
-    }
-    if let textHaloColor = self.textHaloColor {
-       annotation.textHaloColor = StyleColor.init(uiColorFromHex(rgbValue: textHaloColor.intValue))
-    }
-    if let textHaloWidth = self.textHaloWidth {
-       annotation.textHaloWidth = textHaloWidth.doubleValue
-    }
-    if let textOpacity = self.textOpacity {
-       annotation.textOpacity = textOpacity.doubleValue
-    }
-        return annotation
+
+    func copyToPointAnnotation(to: PointAnnotation) -> PointAnnotation {
+        var toPointAnnotation = to
+        toPointAnnotation.point = Point(
+            convertDictionaryToCLLocationCoordinate2D(dict: self.geometry)!
+        )
+        if let image = self.image {
+            toPointAnnotation.image = .init(image: UIImage(data: image.data, scale: UIScreen.main.scale)!, name: UUID().uuidString)
+        }
+        toPointAnnotation.iconAnchor = IconAnchor.allCases[Int(self.iconAnchor.rawValue)]
+        if let iconImage = self.iconImage {
+            toPointAnnotation.iconImage = iconImage
+        }
+        if let iconOffset = self.iconOffset {
+            toPointAnnotation.iconOffset = iconOffset.map({$0.doubleValue})
+        }
+        if let iconRotate = self.iconRotate {
+            toPointAnnotation.iconRotate = iconRotate.doubleValue
+        }
+        if let iconSize = self.iconSize {
+            toPointAnnotation.iconSize = iconSize.doubleValue
+        }
+        if let symbolSortKey = self.symbolSortKey {
+            toPointAnnotation.symbolSortKey = symbolSortKey.doubleValue
+        }
+        toPointAnnotation.textAnchor = TextAnchor.allCases[Int(self.textAnchor.rawValue)]
+        if let textField = self.textField {
+            toPointAnnotation.textField = textField
+        }
+        toPointAnnotation.textJustify = TextJustify.allCases[Int(self.textJustify.rawValue)]
+        if let textLetterSpacing = self.textLetterSpacing {
+            toPointAnnotation.textLetterSpacing = textLetterSpacing.doubleValue
+        }
+        if let textMaxWidth = self.textMaxWidth {
+            toPointAnnotation.textMaxWidth = textMaxWidth.doubleValue
+        }
+        if let textOffset = self.textOffset {
+            toPointAnnotation.textOffset = textOffset.map({$0.doubleValue})
+        }
+        if let textRadialOffset = self.textRadialOffset {
+            toPointAnnotation.textRadialOffset = textRadialOffset.doubleValue
+        }
+        if let textRotate = self.textRotate {
+            toPointAnnotation.textRotate = textRotate.doubleValue
+        }
+        if let textSize = self.textSize {
+            toPointAnnotation.textSize = textSize.doubleValue
+        }
+        toPointAnnotation.textTransform = TextTransform.allCases[Int(self.textTransform.rawValue)]
+        if let iconColor = self.iconColor {
+            toPointAnnotation.iconColor = StyleColor.init(uiColorFromHex(rgbValue: iconColor.intValue))
+        }
+        if let iconHaloBlur = self.iconHaloBlur {
+            toPointAnnotation.iconHaloBlur = iconHaloBlur.doubleValue
+        }
+        if let iconHaloColor = self.iconHaloColor {
+            toPointAnnotation.iconHaloColor = StyleColor.init(uiColorFromHex(rgbValue: iconHaloColor.intValue))
+        }
+        if let iconHaloWidth = self.iconHaloWidth {
+            toPointAnnotation.iconHaloWidth = iconHaloWidth.doubleValue
+        }
+        if let iconOpacity = self.iconOpacity {
+            toPointAnnotation.iconOpacity = iconOpacity.doubleValue
+        }
+        if let textColor = self.textColor {
+            toPointAnnotation.textColor = StyleColor.init(uiColorFromHex(rgbValue: textColor.intValue))
+        }
+        if let textHaloBlur = self.textHaloBlur {
+            toPointAnnotation.textHaloBlur = textHaloBlur.doubleValue
+        }
+        if let textHaloColor = self.textHaloColor {
+            toPointAnnotation.textHaloColor = StyleColor.init(uiColorFromHex(rgbValue: textHaloColor.intValue))
+        }
+        if let textHaloWidth = self.textHaloWidth {
+            toPointAnnotation.textHaloWidth = textHaloWidth.doubleValue
+        }
+        if let textOpacity = self.textOpacity {
+            toPointAnnotation.textOpacity = textOpacity.doubleValue
+        }
+        return toPointAnnotation
     }
 }
 extension PointAnnotation {
